@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>學生資料管理系統</title>
+  <link rel="shortcut icon" href="#" type="image/x-icon">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"
+    integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <!---匯入要使用的函式庫--->
+
+
+</head>
+<!-- 簡寫用法  讚 -->
+<body>
+  <h1 class="header">學生資料管理系統</h1>
+  <div id="addForm">
+    <form  method="post">
+      <h3>新增學員</h3>
+      <p><input type="number" name="classroom" id="classroom">班級</p>
+      <p><input type="number" name="seatnum" id="seatnum">座號</p>
+      <p><input type="text" name="name" id="name">姓名</p>
+      <p><input type="date" name="birthday" id="birthday">生日</p>
+      <p><input type="button" value="確認新增" onclick="create()"></p>
+    </form>
+  </div>
+  <div class="delForm">
+    <form  method="post">
+      <h3>編輯學員</h3>
+      <p><input type="number" name="classroom" id="eClassroom">班級</p>
+      <p><input type="number" name="seatnum" id="eSeatnum">座號</p>
+      <p><input type="text" name="name" id="eName">姓名</p>
+      <p><input type="date" name="birthday" id="eBirthday">生日</p>
+      <p>
+        <input type="hidden" name="id" value="">
+        <input type="button" value="確認編輯" onclick="update()"></p>
+    </form>
+  </div>
+  <div id="editForm"></div>
+
+  <a href="#" onclick="query(101)">101</a>
+  <a href="Javascript:query(102)">102</a>
+  <a href="Javascript:query(103)">103</a>
+  <a href="Javascript:query(104)">104</a>
+  <a href="Javascript:query(105)">105</a>
+  <a href="Javascript:query(106)">106</a>
+  <a href="Javascript:query(107)">107</a>
+  <a href="Javascript:query(108)">108</a>
+  <a href="Javascript:query(109)">109</a>
+  <a href="Javascript:query(110)">110</a>
+  <h3 id="room" data-classroom=""></h3>
+  <div id="result" style="display:none"></div>
+
+
+  <table id="list">
+
+  </table>
+
+</body>
+
+</html>
+<script>
+  /************************************
+   * 1.考慮觸發行為的事件
+   * 2.建立監聽行為
+   * 3.考慮是否需要代入參數
+   * 4.是否會有回傳值？回傳值的功用及處理？
+   * 5.是否需要更新畫面內容？更新畫面的方法？
+   ************************************/
+    // query();
+
+  //新增資料的函式
+  function create() {
+    let form={
+      "classroom":$('#classroom').val(),
+      "seatnum":$('#seatnum').val(),
+      "name":$('#name').val(),
+      "birthday":$('#birthday').val()
+    }
+    $.post("./api/insert.php",form,(res)=>{ /*回呼函式 從insert*/
+      // console.log(res);
+      if(parseInt(res===1)){
+        alert("新增成功")
+        query(form.classroom)
+      }else{
+        alert('新增失敗')
+      }
+      // console.log(res);
+    });
+  }
+
+  //查詢資料的函式
+  function query(classroom) {
+    $("#classroom").html(`現在顯示${classroom}班的學生`)
+    $('#room').data('classroom',classroom)
+    console.log($('#room').data('classroom'));
+    $.get("api/query.php",{classroom},(students)=>{
+      students=JSON.parse(students)
+      // console.log(students);
+      let tr="";
+      students.forEach((value,index)=>{
+        // console.log(index,value);
+        tr=tr+`<tr>
+          <td>${value.name}</td>
+          <td>${value.birthday}</td>
+          <td>
+            <button onclick='del(${classroom},${value.id})'>編輯(${value.id})</button>
+            <button onclick='del(${classroom},${value.id})'>刪除(${value.id})</button>
+          </td>
+          </tr>`;
+        
+          
+      
+      });
+      $('#list').html(tr);
+    })
+  }
+
+  //取得要修改的學生資料
+  function edit(id){
+    $.get("./api/show.php",{id},(student)=>{
+      student=JSON.parse(student)
+      $("#eClassroom").val(student.classroom)
+      $("#eSeatnum").val(student.seat_num)
+      $("#eName").val(student.name)
+      $("#eBirthday").val(student.birthday)
+      $("#stuId").val(student.id)
+    })
+  }
+
+
+  //編輯資料的函式
+  function update() {
+    let form={
+      "classroom":$("#eClassroom").val(),
+      "seatnum":$("#eSeatnum").val(),
+      "name":$("#eName").val(),
+      "birthday":$("#eBirthday").val(),
+      "id":$("#stuId").val()
+    }
+    $.post("./api/update.php",form,()=>{
+      $("#eClassroom").val("")
+      $("#eSeatnum").val("")
+      $("#eName").val("")
+      $("#eBirthday").val("")
+      $("#stuId").val("")
+    })
+  }
+
+  //刪除資料的函式
+  function del(classroom, id) {
+    // let classroom=
+    $.post("./api/delete.php",{id},(res)=>{
+      if(parseInt(res)===1){
+
+        $("#result").css({background:'lightblue',color:'blue',display:'block'}.text("刪除成功"));
+        
+      }  else {
+        
+        $("#result").css({background:'pink',color:'red',display:'block'}.text("刪除失敗"));
+      }
+      query(classroom);
+
+      setTimeout(()=>{
+        $('#result').hide();
+      },3000)
+    })
+  }
+</script>

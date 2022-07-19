@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>XMLHttpRequest</title>
+    <link rel="shortcut icon" href="#" type="image/x-icon">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css"
+        integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
+    <style>
+        .card-group{
+            width: 80vw;
+            margin: auto;
+        }
+        .card-group .card{
+            /* flex:unset / none也可 */
+            flex: initial;  
+            padding: 1rem;
+            border: 0;
+        }
+        .card-group .card .card-body{
+            flex: unset;
+            padding: 0.5rem;
+            border: 1px solid gray;
+            border-radius: 0.5rem;
+        }
+        .name{
+            font-weight: bolder;
+            border-bottom: 1px solid gray;
+            margin: 0.25rem 0;
+        }
+
+        .summary{
+            border-bottom: 1px solid gray;
+            box-shadow: 0 0 5 lightgray;
+            margin: 0.5rem 0;
+            width: 90%;
+            float: right;
+        }
+        
+    </style>
+</head>
+
+<body>
+    <h1 class="header">XMLHttpRequest</h1>
+    <div class="title"></div>
+    <h4></h4>
+    <ul class="card-group"></ul>
+
+</body>
+
+</html>
+<script>
+    /********************************************************
+     * 1.api網址  https://kktix.com/events.json
+     * 2.宣告一個XMLHttpRequest物件
+     * 3.建立請求的各項設定及實質內容
+     * 4.建立得到回應時的各項行為
+     * 5.送出請求
+     ********************************************************/
+
+    //宣告一個XMLHttpRequest物件
+    let xhr = new XMLHttpRequest;
+
+    //建立請求的各項設定及實質內容
+    xhr.open(
+        'get', 'https://kktix.com/events.json'
+    );
+
+    //建立得到回應時的各項設定及行為
+    xhr.onload = function () {
+        let type = xhr.getResponseHeader("Content-Type");
+        let status = xhr.status
+        let response = xhr.responseText
+        //解碼json
+        let data = JSON.parse(response)
+        let title = document.querySelector('.title')
+        title.innerHTML = data.title
+
+        console.log(data);
+        let ul = document.querySelector('ul')
+        let li = '';
+        let entries = data.entry
+        for (let i = 0; i < entries.length; i++) {
+            li = li + `<li class="card col-3">
+                    <div class="card-body">
+                    ${entries[i].title}
+                    <div class="name">${entries[i].author.name}</div>
+                    <div class="summary">${entries[i].summary}</div>
+                    
+                    </div>
+                    </li>`;
+
+        }
+        ul.innerHTML = li
+    }
+
+
+    //送出請求
+    xhr.send();
+</script>
